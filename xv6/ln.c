@@ -10,10 +10,11 @@ main(int argc, char *argv[])
     exit();
   }
   if ( argc == 4 && strcmp(argv[1], "-s") == 0) {
-    if(link(1, argv[2], argv[3]) < 0 )
+    if( link(1, argv[2], argv[3]) < 0 )
       printf(2, "link %s %s: failed\n", argv[1], argv[2]);
+
   }
-  if(link(0 ,argv[1], argv[2]) < 0)
+  else if(link(0 ,argv[1], argv[2]) < 0)
     printf(2, "link %s %s: failed\n", argv[1], argv[2]);
   exit();
 }

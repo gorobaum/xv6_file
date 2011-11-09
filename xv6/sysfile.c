@@ -159,10 +159,11 @@ sys_link(void)
     commit_trans();
     return -1;
   }
-  else {
+  else if(op == 1){
+    cprintf("aeHO!\n");
     return 0;
-    //printf(1,"aeHO!\n");
   }
+  else return -1;
 }
 
 // Is the directory dp empty except for "." and ".." ?
