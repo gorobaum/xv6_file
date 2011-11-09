@@ -621,7 +621,7 @@ linktest(void)
   }
   close(fd);
 
-  if(link("lf1", "lf2") < 0){
+  if(link(0,"lf1", "lf2") < 0){
     printf(1, "link lf1 lf2 failed\n");
     exit();
   }
@@ -643,18 +643,18 @@ linktest(void)
   }
   close(fd);
 
-  if(link("lf2", "lf2") >= 0){
+  if(link(0,"lf2", "lf2") >= 0){
     printf(1, "link lf2 lf2 succeeded! oops\n");
     exit();
   }
 
   unlink("lf2");
-  if(link("lf2", "lf1") >= 0){
+  if(link(0,"lf2", "lf1") >= 0){
     printf(1, "link non-existant succeeded! oops\n");
     exit();
   }
 
-  if(link(".", "lf1") >= 0){
+  if(link(0,".", "lf1") >= 0){
     printf(1, "link . lf1 succeeded! oops\n");
     exit();
   }
@@ -682,9 +682,9 @@ concreate(void)
     unlink(file);
     pid = fork();
     if(pid && (i % 3) == 1){
-      link("C0", file);
+      link(0,"C0", file);
     } else if(pid == 0 && (i % 5) == 1){
-      link("C0", file);
+      link(0,"C0", file);
     } else {
       fd = open(file, O_CREATE | O_RDWR);
       if(fd < 0){
@@ -776,7 +776,7 @@ linkunlink()
     if((x % 3) == 0){
       close(open("x", O_RDWR | O_CREATE));
     } else if((x % 3) == 1){
-      link("cat", "x");
+      link(0,"cat", "x");
     } else {
       unlink("x");
     }
@@ -812,7 +812,7 @@ bigdir(void)
     name[1] = '0' + (i / 64);
     name[2] = '0' + (i % 64);
     name[3] = '\0';
-    if(link("bd", name) != 0){
+    if(link(0,"bd", name) != 0){
       printf(1, "bigdir link failed\n");
       exit();
     }
@@ -884,7 +884,7 @@ subdir(void)
   }
   close(fd);
 
-  if(link("dd/dd/ff", "dd/dd/ffff") != 0){
+  if(link(0,"dd/dd/ff", "dd/dd/ffff") != 0){
     printf(1, "link dd/dd/ff dd/dd/ffff failed\n");
     exit();
   }
@@ -951,15 +951,15 @@ subdir(void)
     printf(1, "open dd wronly succeeded!\n");
     exit();
   }
-  if(link("dd/ff/ff", "dd/dd/xx") == 0){
+  if(link(0,"dd/ff/ff", "dd/dd/xx") == 0){
     printf(1, "link dd/ff/ff dd/dd/xx succeeded!\n");
     exit();
   }
-  if(link("dd/xx/ff", "dd/dd/xx") == 0){
+  if(link(0,"dd/xx/ff", "dd/dd/xx") == 0){
     printf(1, "link dd/xx/ff dd/dd/xx succeeded!\n");
     exit();
   }
-  if(link("dd/ff", "dd/dd/ffff") == 0){
+  if(link(0,"dd/ff", "dd/dd/ffff") == 0){
     printf(1, "link dd/ff dd/dd/ffff succeeded!\n");
     exit();
   }
@@ -1217,7 +1217,7 @@ dirfile(void)
     printf(1, "unlink dirfile/xx succeeded!\n");
     exit();
   }
-  if(link("README", "dirfile/xx") == 0){
+  if(link(0,"README", "dirfile/xx") == 0){
     printf(1, "link to dirfile/xx succeeded!\n");
     exit();
   }
@@ -1261,7 +1261,7 @@ iref(void)
     }
 
     mkdir("");
-    link("README", "");
+    link(0,"README", "");
     fd = open("", O_CREATE);
     if(fd >= 0)
       close(fd);
@@ -1482,7 +1482,7 @@ validatetest(void)
     wait();
 
     // try to crash the kernel by passing in a bad string pointer
-    if(link("nosuchfile", (char*)p) != -1){
+    if(link(0,"nosuchfile", (char*)p) != -1){
       printf(stdout, "link should not succeed\n");
       exit();
     }

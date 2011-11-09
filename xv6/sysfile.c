@@ -116,47 +116,53 @@ int
 sys_link(void)
 {
   char name[DIRSIZ], *new, *old;
+  int op = 0;
   struct inode *dp, *ip;
 
-  if(argstr(0, &old) < 0 || argstr(1, &new) < 0)
+  if(argint(0, &op) < 0 || argstr(1, &old) < 0 || argstr(2, &new) < 0)
     return -1;
   if((ip = namei(old)) == 0)
     return -1;
+  if ( op == 0 ) {
+    begin_trans();
 
-  begin_trans();
+    ilock(ip);
+    if(ip->type == T_DIR){
+      iunlockput(ip);
+      commit_trans();
+      return -1;
+    }
 
-  ilock(ip);
-  if(ip->type == T_DIR){
+    ip->nlink++;
+    iupdate(ip);
+    iunlock(ip);
+
+    if((dp = nameiparent(new, name)) == 0)
+      goto bad;
+    ilock(dp);
+    if(dp->dev != ip->dev || dirlink(dp, name, ip->inum) < 0){
+      iunlockput(dp);
+      goto bad;
+    }
+    iunlockput(dp);
+    iput(ip);
+
+    commit_trans();
+
+    return 0;
+
+  bad:
+    ilock(ip);
+    ip->nlink--;
+    iupdate(ip);
     iunlockput(ip);
     commit_trans();
     return -1;
   }
-
-  ip->nlink++;
-  iupdate(ip);
-  iunlock(ip);
-
-  if((dp = nameiparent(new, name)) == 0)
-    goto bad;
-  ilock(dp);
-  if(dp->dev != ip->dev || dirlink(dp, name, ip->inum) < 0){
-    iunlockput(dp);
-    goto bad;
+  else {
+    return 0;
+    //printf(1,"aeHO!\n");
   }
-  iunlockput(dp);
-  iput(ip);
-
-  commit_trans();
-
-  return 0;
-
-bad:
-  ilock(ip);
-  ip->nlink--;
-  iupdate(ip);
-  iunlockput(ip);
-  commit_trans();
-  return -1;
 }
 
 // Is the directory dp empty except for "." and ".." ?

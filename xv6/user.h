@@ -14,7 +14,7 @@ int open(char*, int);
 int mknod(char*, short, short);
 int unlink(char*);
 int fstat(int fd, struct stat*);
-int link(char*, char*);
+int link(int, char*, char*);
 int mkdir(char*);
 int chdir(char*);
 int dup(int);
