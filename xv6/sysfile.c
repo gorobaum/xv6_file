@@ -136,7 +136,6 @@ sys_link(void)
     ip->nlink++;
     iupdate(ip);
     iunlock(ip);
-
     if((dp = nameiparent(new, name)) == 0)
       goto bad;
     ilock(dp);
@@ -160,16 +159,20 @@ sys_link(void)
     return -1;
   }
   else if(op == 1){
-    
-    if((ip = dirlookup(proc->cwd, new, 0)) != 0)
-      return -1;
-    
     begin_trans();
-    //ilock(ip);
-    cprintf("aeHO!\n");
     
-    //iupdate(ip);
-    //iunlock(ip);
+    if((dp = nameiparent(new, name)) == 0 )
+      return -1;
+
+    
+    ilock(dp);
+    if(ip->dev != dp->dev || dirlink(dp, name, ip->inum) < 0){
+        iunlockput(dp);
+        return -1;
+    }
+
+    iupdate(dp);
+    iunlock(dp);
     commit_trans();
     return 0;
   }

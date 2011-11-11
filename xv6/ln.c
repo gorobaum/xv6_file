@@ -15,6 +15,5 @@ main(int argc, char *argv[])
   }
   else if(link(0 ,argv[1], argv[2]) < 0)
     printf(2, "link %s %s: failed\n", argv[1], argv[2]);
-  printf(1, "FALO\n");
   exit();
 }
