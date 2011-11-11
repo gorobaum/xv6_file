@@ -173,12 +173,11 @@ sys_link(void)
     }
     iunlockput(ipn);
 
-    cprintf("Size = %d\n", sizeof(old));
-    if(sizeof(old) >= BSIZE){
+    if(sizeof(*old) >= BSIZE){
       cprintf("Error, name too big for block!\n");
       return -1;
     }
-
+    cprintf("Z = %s\n", old);
     makesoftlink(ipn, new, old);
 
     commit_trans();

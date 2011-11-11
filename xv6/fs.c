@@ -533,7 +533,7 @@ int
 makesoftlink(struct inode *dp, char *name, char *link)
 {
   int off;
-  char *buf = '\0';
+  char buf[BSIZE];
 
   // Look for an empty dirent.
   for(off = 0; off < dp->size; off += sizeof(link)){
@@ -542,10 +542,19 @@ makesoftlink(struct inode *dp, char *name, char *link)
     if(buf == '\0')
       break;
   }
-
+  
   strncpy(buf, link, DIRSIZ);
+  cprintf("B = %s\n", buf);
   if(writei(dp, buf, off, sizeof(link)) != sizeof(link))
     panic("dirlink");
+  
+
+  //TESTE
+  for(off = 0; off < dp->size; off += sizeof(link)){
+    if(readi(dp, buf, off, sizeof(link)) != sizeof(link))
+      panic("dirlink read");
+    cprintf("A = %s\n", buf);
+  }
   
   return 0;
 }
