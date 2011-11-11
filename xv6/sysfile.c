@@ -160,6 +160,11 @@ sys_link(void)
     return -1;
   }
   else if(op == 1){
+    begin_trans();
+      
+    if((dp = nameiparent(new, name)) != 0)
+      return -1;
+
     cprintf("aeHO!\n");
     return 0;
   }
