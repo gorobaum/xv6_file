@@ -43,6 +43,7 @@ ls(char *path)
   
   switch(st.type){
   case T_FILE:
+  case T_SYMLINK:
     printf(1, "%s %d %d %d\n", fmtname(path), st.type, st.ino, st.size);
     break;
   
@@ -66,8 +67,9 @@ ls(char *path)
       printf(1, "%s %d %d %d\n", fmtname(buf), st.type, st.ino, st.size);
     }
     break;
-  }
+
   close(fd);
+  }
 }
 
 int
