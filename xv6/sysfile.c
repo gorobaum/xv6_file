@@ -160,21 +160,39 @@ sys_link(void)
   }
   else if(op == 1){
     begin_trans();
-    
-    if((dp = nameiparent(new, name)) == 0 )
-      return -1;
 
-    
-    ilock(dp);
-    if(ip->dev != dp->dev || dirlink(dp, name, ip->inum) < 0){
-        iunlockput(dp);
-        return -1;
+    ilock(ip);
+    if(ip->type == T_DIR){
+      iunlockput(ip);
+      commit_trans();
+      return -1;
     }
 
-    iupdate(dp);
-    iunlock(dp);
+    ip->nlink++;
+    iupdate(ip);
+    iunlock(ip);
+    if((dp = nameiparent(new, name)) == 0)
+      goto bad;
+    ilock(dp);
+    if(dp->dev != ip->dev || dirlink(dp, name, ip->inum) < 0){
+      // Trocar a linha acima por dirslink(...) FAZER ESSA FUNCAO
+      iunlockput(dp);
+      goto bad;
+    }
+    iunlockput(dp);
+    iput(ip);
+
     commit_trans();
+
     return 0;
+
+  bad:
+    ilock(ip);
+    ip->nlink--;
+    iupdate(ip);
+    iunlockput(ip);
+    commit_trans();
+    return -1;
   }
   else return -1;
 }
