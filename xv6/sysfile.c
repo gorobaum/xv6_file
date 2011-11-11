@@ -138,7 +138,7 @@ sys_link(void)
     if((dp = nameiparent(new, name)) == 0)
       goto bad;
     ilock(dp);
-    if(dp->dev != ip->dev || ){
+    if(dp->dev != ip->dev){
       if(!op &&  dirlink(dp, name, ip->inum) < 0){
         // Trocar a linha acima por dirslink(...) FAZER ESSA FUNCAO
         iunlockput(dp);
@@ -164,8 +164,6 @@ sys_link(void)
     iunlockput(ip);
     commit_trans();
     return -1;
-  }
-  else return -1;
 }
 
 // Is the directory dp empty except for "." and ".." ?
