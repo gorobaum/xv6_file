@@ -170,6 +170,7 @@ sys_link(void)
       commit_trans();
       return -1;
     }
+    iunlockput(dp);
     commit_trans();
     return 0;
   }
