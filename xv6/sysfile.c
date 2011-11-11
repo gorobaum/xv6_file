@@ -120,42 +120,42 @@ sys_link(void)
   struct inode *dp, *ip;
   
   if(argint(0, &op) < 0 || argstr(1, &old) < 0 || argstr(2, &new) < 0)
-    return -1;
+     return -1;
   if((ip = namei(old)) == 0)
     return -1;
-    begin_trans();
 
-    ilock(ip);
-    if(ip->type == T_DIR){
-      iunlockput(ip);
-      commit_trans();
-      return -1;
-    }
+  begin_trans();
 
-    ip->nlink++;
-    iupdate(ip);
-    iunlock(ip);
-    if((dp = nameiparent(new, name)) == 0)
-      goto bad;
-    ilock(dp);
-    if(dp->dev != ip->dev){
-      if(!op &&  dirlink(dp, name, ip->inum) < 0){
-        // Trocar a linha acima por dirslink(...) FAZER ESSA FUNCAO
-        iunlockput(dp);
-        goto bad;
-      }
-      else if(op /* && dirsoftlink(dp, name, ip->inum) < 0 ) */ ){ 
-        // Trocar a linha acima por dirslink(...) FAZER ESSA FUNCAO
-        iunlockput(dp);
-        goto bad;
-      }
-    }
-    iunlockput(dp);
-    iput(ip);
-
+  ilock(ip);
+  if(ip->type == T_DIR){
+    iunlockput(ip);
     commit_trans();
+    return -1;
+  }
 
-    return 0;
+  ip->nlink++;
+  iupdate(ip);
+  iunlock(ip);
+
+  if((dp = nameiparent(new, name)) == 0)
+    goto bad;
+  ilock(dp);
+  if(op){
+    if(dp->dev != ip->dev || dirlink(dp, name, ip->inum) < 0){
+        iunlockput(dp);
+        goto bad;
+    }
+  }
+  else if(dp->dev != ip->dev || dirlink(dp, name, ip->inum) < 0){ 
+        iunlockput(dp);
+        goto bad;
+  }
+  iunlockput(dp);
+  iput(ip);
+  
+  commit_trans();
+  
+  return 0;
 
   bad:
     ilock(ip);
