@@ -118,7 +118,7 @@ sys_link(void)
   char name[DIRSIZ], *new, *old;
   int op = 0;
   struct inode *dp, *ip;
-
+  
   if(argint(0, &op) < 0 || argstr(1, &old) < 0 || argstr(2, &new) < 0)
     return -1;
   if((ip = namei(old)) == 0)
@@ -160,12 +160,17 @@ sys_link(void)
     return -1;
   }
   else if(op == 1){
-    begin_trans();
-      
-    if((dp = nameiparent(new, name)) != 0)
+    
+    if((ip = dirlookup(proc->cwd, new, 0)) != 0)
       return -1;
-
+    
+    begin_trans();
+    //ilock(ip);
     cprintf("aeHO!\n");
+    
+    //iupdate(ip);
+    //iunlock(ip);
+    commit_trans();
     return 0;
   }
   else return -1;

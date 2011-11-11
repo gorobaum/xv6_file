@@ -535,7 +535,6 @@ dirlink(struct inode *dp, char *name, uint inum)
   int off;
   struct dirent de;
   struct inode *ip;
-
   // Check that name is not present.
   if((ip = dirlookup(dp, name, 0)) != 0){
     iput(ip);
