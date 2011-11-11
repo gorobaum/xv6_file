@@ -530,28 +530,21 @@ dirlookup(struct inode *dp, char *name, uint *poff)
 
 // Write a new directory entry (name, inum) into the directory dp.
 int
-dirsoftlink(struct inode *dp, char *name, uint inum)
+makesoftlink(struct inode *dp, char *name, char *link)
 {
   int off;
-  struct dirent de;
-  struct inode *ip;
-  // Check that name is not present.
-  if((ip = dirlookup(dp, name, 0)) != 0){
-    iput(ip);
-    return -1;
-  }
+  char *buf = '\0';
 
   // Look for an empty dirent.
-  for(off = 0; off < dp->size; off += sizeof(de)){
-    if(readi(dp, (char*)&de, off, sizeof(de)) != sizeof(de))
+  for(off = 0; off < dp->size; off += sizeof(link)){
+    if(readi(dp, buf, off, sizeof(link)) != sizeof(link))
       panic("dirlink read");
-    if(de.inum == 0)
+    if(buf == '\0')
       break;
   }
 
-  strncpy(de.name, name, DIRSIZ);
-  de.inum = inum;
-  if(writei(dp, (char*)&de, off, sizeof(de)) != sizeof(de))
+  strncpy(buf, link, DIRSIZ);
+  if(writei(dp, buf, off, sizeof(link)) != sizeof(link))
     panic("dirlink");
   
   return 0;
