@@ -121,56 +121,58 @@ sys_link(void)
 {
   char name[DIRSIZ], *new, *old;
   int op = 0;
-  struct inode *dp, *ip;
+  struct inode *dp, *ipn, *ipo;
   
   if(argint(0, &op) < 0 || argstr(1, &old) < 0 || argstr(2, &new) < 0)
      return -1;
-  if((ip = namei(old)) == 0)
+  if((ipo = namei(old)) == 0)
     return -1;
   
   if(!op){
     begin_trans();
 
-    ilock(ip);
-    if(ip->type == T_DIR){
-      iunlockput(ip);
+    ilock(ipo);
+    if(ipo->type == T_DIR){
+      iunlockput(ipo);
       commit_trans();
       return -1;
     }
 
-    ip->nlink++;
-    iupdate(ip);
-    iunlock(ip);
+    ipo->nlink++;
+    iupdate(ipo);
+    iunlock(ipo);
 
     if((dp = nameiparent(new, name)) == 0)
       goto bad;
     ilock(dp);
-    if(dp->dev != ip->dev || dirlink(dp, name, ip->inum) < 0){
+    if(dp->dev != ipo->dev || dirlink(dp, name, ipo->inum) < 0){
       iunlockput(dp);
       goto bad;
     }
     iunlockput(dp);
-    iput(ip);
+    iput(ipo);
   
     commit_trans();
   
     return 0;
 
     bad:
-      ilock(ip);
-      ip->nlink--;
-      iupdate(ip);
-      iunlockput(ip);
+      ilock(ipo);
+      ipo->nlink--;
+      iupdate(ipo);
+      iunlockput(ipo);
       commit_trans();
       return -1;
   }
   else {
     begin_trans();
-    if((dp = create(new, T_SYMLINK, 0, 0)) == 0){
+
+    if((ipn = create(new, T_SYMLINK, 0, 0)) == 0){
       commit_trans();
       return -1;
     }
-    iunlockput(dp);
+    iunlockput(ipn);
+
     commit_trans();
     return 0;
   }
