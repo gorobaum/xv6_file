@@ -528,33 +528,29 @@ dirlookup(struct inode *dp, char *name, uint *poff)
   return 0;
 }
 
+int
+getlink(struct inode *ip, char *path){
+  if(readi(ip, path, 0, sizeof(path)) != sizeof(path))
+    panic("dirlink read");
+  return 0;
+}
+  
 // Write a new directory entry (name, inum) into the directory dp.
 int
 makesoftlink(struct inode *dp, char *name, char *link)
 {
-  int off;
   char buf[BSIZE];
 
-  // Look for an empty dirent.
-  for(off = 0; off < dp->size; off += sizeof(link)){
-    if(readi(dp, buf, off, sizeof(link)) != sizeof(link))
-      panic("dirlink read");
-    if(buf == '\0')
-      break;
-  }
-  
   strncpy(buf, link, DIRSIZ);
   cprintf("B = %s\n", buf);
-  if(writei(dp, buf, off, sizeof(link)) != sizeof(link))
+  if(writei(dp, buf, 0, sizeof(link)) != sizeof(link))
     panic("dirlink");
   
 
   //TESTE
-  for(off = 0; off < dp->size; off += sizeof(link)){
-    if(readi(dp, buf, off, sizeof(link)) != sizeof(link))
-      panic("dirlink read");
-    cprintf("A = %s\n", buf);
-  }
+  if(readi(dp, buf, 0, sizeof(link)) != sizeof(link))
+    panic("dirlink read");
+  cprintf("A = %s\n", buf);
   
   return 0;
 }

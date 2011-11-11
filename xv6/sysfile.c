@@ -310,6 +310,15 @@ sys_open(void)
 
   if(argstr(0, &path) < 0 || argint(1, &omode) < 0)
     return -1;
+
+  /*if(!(omode & O_NOFOLLOW))
+    if((ip = namei(path)) == 0)
+      return -1;
+    ilock(ip);
+    if(getlink(ip, path) < 0)
+      return -1;
+    iunlockput(ip);
+  */  
   if(omode & O_CREATE){
     begin_trans();
     ip = create(path, T_FILE, 0, 0);
