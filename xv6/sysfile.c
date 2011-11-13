@@ -167,6 +167,7 @@ sys_link(void)
   else {
     begin_trans();
 
+    // Create the new inode and link it to its parent directory.
     if((ipn = create(new, T_SYMLINK, 0, 0)) == 0){
       commit_trans();
       return -1;
@@ -179,6 +180,7 @@ sys_link(void)
       return -1;
     }
     cprintf("Z = %s\n", old);
+    // The create call returned ipn locked, so it is safe to do this.
     makesoftlink(ipn, new, old);
 
     iunlockput(ipn);
