@@ -2,6 +2,7 @@
 #include "stat.h"
 #include "user.h"
 #include "fs.h"
+#include "fcntl.h"
 
 char*
 fmtname(char *path)
@@ -43,10 +44,18 @@ ls(char *path)
   
   switch(st.type){
   case T_FILE:
-  case T_SYMLINK:
     printf(1, "%s %d %d %d\n", fmtname(path), st.type, st.ino, st.size);
     break;
-  
+
+  case T_SYMLINK:
+    printf(1, "%s %d %d %d\n", fmtname(path), st.type, st.ino, st.size);
+    if((fd = open(path, O_FOLLOW)) < 0)
+      return; 
+    if(fstat(fd, &st) < 0)
+      return;
+    printf(1, "%s %d %d %d\n", fmtname(path), st.type, st.ino, st.size);
+    break;
+
   case T_DIR:
     if(strlen(path) + 1 + DIRSIZ + 1 > sizeof buf){
       printf(1, "ls: path too long\n");

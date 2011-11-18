@@ -322,7 +322,6 @@ sys_open(void)
     if(getlink(ip, path) < 0)
       return -1;
     cprintf("PATH = %s\n",path);
-    iunlockput(ip);
   } else if(omode & O_CREATE){
     begin_trans();
     ip = create(path, T_FILE, 0, 0);
