@@ -464,7 +464,6 @@ writei(struct inode *ip, char *src, uint off, uint n)
 {
   uint tot, m;
   struct buf *bp;
-
   if(ip->type == T_DEV){
     if(ip->major < 0 || ip->major >= NDEV || !devsw[ip->major].write)
       return -1;
@@ -483,7 +482,7 @@ writei(struct inode *ip, char *src, uint off, uint n)
     log_write(bp);
     brelse(bp);
   }
-
+  
   if(n > 0 && off > ip->size){
     ip->size = off;
     iupdate(ip);
@@ -548,7 +547,7 @@ makesoftlink(struct inode *dp, char *name, char *link)
   strncpy(buf, link, size);
   buf[size] = '\0';
   cprintf("BUF - %s\n", buf);
-  if(writei(dp, buf, 0, sizeof(link)) != sizeof(link))
+  if(writei(dp, buf, 0, size) != size)
     panic("dirlink");
   
   if(readi(dp, teste, 0, sizeof(link)) != sizeof(link))
