@@ -179,7 +179,6 @@ sys_link(void)
       commit_trans();
       return -1;
     }
-    cprintf("Z = %s\n", old);
     // The create call returned ipn locked, so it is safe to do this.
     makesoftlink(ipn, new, old);
 

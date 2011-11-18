@@ -539,19 +539,21 @@ getlink(struct inode *ip, char *path){
 int
 makesoftlink(struct inode *dp, char *name, char *link)
 {
-  char buf[BSIZE];
-
-  strncpy(buf, link, DIRSIZ);
-  cprintf("B = %s\n", buf);
+  int size;
+  char *buf, *teste;
+  teste = kalloc();
+  buf = kalloc();
+  size = strlen(link);
+  cprintf("Size - %d\n", size);
+  strncpy(buf, link, size);
+  buf[size] = '\0';
+  cprintf("BUF - %s\n", buf);
   if(writei(dp, buf, 0, sizeof(link)) != sizeof(link))
     panic("dirlink");
   
-
-  //TESTE
-  if(readi(dp, buf, 0, sizeof(link)) != sizeof(link))
+  if(readi(dp, teste, 0, sizeof(link)) != sizeof(link))
     panic("dirlink read");
-  cprintf("A = %s\n", buf);
-  
+  cprintf("TESTE - %s\n", teste); 
   return 0;
 }
 
