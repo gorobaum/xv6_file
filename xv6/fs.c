@@ -21,6 +21,7 @@
 #include "file.h"
 
 #define min(a, b) ((a) < (b) ? (a) : (b))
+#define SIZE_NAME 20
 static void itrunc(struct inode*);
 
 // Read the super block.
@@ -547,15 +548,15 @@ makesoftlink(struct inode *dp, char *name, char *link)
   strncpy(buf, link, size);
   buf[size] = '\0';
   cprintf("BUF - %s\n", buf);
-  if(writei(dp, buf, 0, size) != size)
-    panic("makesoft");
-  if(writei(dp, (char*)&size, 1, sizeof(int)) != sizeof(int))
-    panic("makesoft");
+  if(writei(dp, (char*)&size, 0, sizeof(int)) != sizeof(int))
+    panic("makesoft1");
+  if(writei(dp, buf, sizeof(int), size) != size)
+    panic("makesoft2");
 
-  if(readi(dp, teste, 0, size) != size)
-    panic("makesoft read");
-  if(readi(dp, (char*)&i, 1, sizeof(int)) != sizeof(int))
-    panic("makesoft read");
+  if(readi(dp, (char*)&i, 0, sizeof(int)) != sizeof(int))
+    panic("makesoft read1");
+  if(readi(dp, teste, sizeof(int), i) != i)
+    panic("makesoft read2");
   teste[i] = '\0';
   cprintf("TESTE - %s\nI - %d\n", teste, i); 
   return 0;
