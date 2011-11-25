@@ -313,14 +313,15 @@ sys_open(void)
 
   if(argstr(0, &path) < 0 || argint(1, &omode) < 0)
     return -1;
-
+  
+  //cprintf("PATH - %s\n", path);
   if(omode & O_FOLLOW){
     if((ip = namei(path)) == 0)
       return -1;
     ilock(ip);
     if(getlink(ip, path) < 0)
       return -1;
-    cprintf("PATH = %s\n",path);
+    //cprintf("PATH = %s\n",path);
   } else if(omode & O_CREATE){
     begin_trans();
     ip = create(path, T_FILE, 0, 0);

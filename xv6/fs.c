@@ -530,8 +530,12 @@ dirlookup(struct inode *dp, char *name, uint *poff)
 
 int
 getlink(struct inode *ip, char *path){
-  if(readi(ip, path, 0, sizeof(path)) != sizeof(path))
-    panic("dirlink read");
+  int size;
+  if(readi(ip, (char*)&size, 0, sizeof(int)) != sizeof(int))
+    panic("getlink");
+  if(readi(ip, path, sizeof(int), size*sizeof(char)) != size*sizeof(char))
+    panic("getlink");
+  //cprintf("Name - %s\n", path);
   return 0;
 }
   

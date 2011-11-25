@@ -49,10 +49,13 @@ ls(char *path)
 
   case T_SYMLINK:
     printf(1, "%s %d %d %d\n", fmtname(path), st.type, st.ino, st.size);
+    close(fd);
     if((fd = open(path, O_FOLLOW)) < 0)
       return; 
-    if(fstat(fd, &st) < 0)
+    if(fstat(fd, &st) < 0){
+      close(fd);
       return;
+    }
     printf(1, "%s %d %d %d\n", fmtname(path), st.type, st.ino, st.size);
     break;
 
