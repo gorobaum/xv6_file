@@ -35,7 +35,6 @@ ls(char *path)
     printf(2, "ls: cannot open %s\n", path);
     return;
   }
-  
   if(fstat(fd, &st) < 0){
     printf(2, "ls: cannot stat %s\n", path);
     close(fd);
@@ -49,6 +48,7 @@ ls(char *path)
 
   case T_SYMLINK:
     printf(1, "%s %d %d %d\n", fmtname(path), st.type, st.ino, st.size);
+    printf(1, "%s ->", fmtname(path));
     close(fd);
     if((fd = open(path, O_FOLLOW)) < 0)
       return; 
@@ -56,6 +56,7 @@ ls(char *path)
       close(fd);
       return;
     }
+    printf(1," %s\n", fmtname(path));
     printf(1, "%s %d %d %d\n", fmtname(path), st.type, st.ino, st.size);
     break;
 
