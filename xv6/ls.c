@@ -79,8 +79,8 @@ ls(char *path)
       }
       printf(1, "%s %d %d %d", fmtname(buf), st.type, st.ino, st.size);
       if(st.type == T_SYMLINK){
-        if((getlink(st.ino, buf)) < 0)
-          continue; 
+        //if((getlink(st.ino, buf)) < 0)
+        //  continue; 
         printf(1,"  %s", buf);
       }
       printf(1,"\n");

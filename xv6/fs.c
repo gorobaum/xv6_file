@@ -542,7 +542,7 @@ getlink(struct inode *ip, char *path){
 int
 makesoftlink(struct inode *dp, char *name, char *link)
 {
-  int size, i;
+  int size;
   char *buf, *teste;
   teste = kalloc();
   buf = kalloc();
