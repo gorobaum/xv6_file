@@ -535,12 +535,10 @@ getlink(struct inode *ip, char *path){
     panic("getlink");
   if(readi(ip, path, sizeof(int), size*sizeof(char)) != size*sizeof(char))
     panic("getlink");
-  //cprintf("Name - %s\n", path);
   return 0;
 }
   
 // Write a new directory entry (name, inum) into the directory dp.
-// PRECISA LIMPAR ESSA FUNÇÃO
 int
 makesoftlink(struct inode *dp, char *name, char *link)
 {
@@ -549,23 +547,13 @@ makesoftlink(struct inode *dp, char *name, char *link)
   teste = kalloc();
   buf = kalloc();
   size = strlen(link);
-  //cprintf("Size - %d\n", size);
   strncpy(buf, link, size);
   buf[size] = '\0';
-  //cprintf("BUF - %s\n", buf);
   if(writei(dp, (char*)&size, 0, sizeof(int)) != sizeof(int))
     panic("makesoft1");
   if(writei(dp, buf, sizeof(int), size) != size)
     panic("makesoft2");
 
-
-  /*Testes*/ 
-  if(readi(dp, (char*)&i, 0, sizeof(int)) != sizeof(int))
-    panic("makesoft read1");
-  if(readi(dp, teste, sizeof(int), i) != i)
-    panic("makesoft read2");
-  teste[i] = '\0';
-  //cprintf("TESTE - %s\nI - %d\n", teste, i); 
   return 0;
 }
 
