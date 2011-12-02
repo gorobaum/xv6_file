@@ -320,8 +320,10 @@ sys_open(void)
   } else {
     if((ip = namei(path)) == 0)
       return -1;
-    if(ip->type == T_SYMLINK && !(omode & O_NOFOLLOW)){
+    if(ip->type == T_SYMLINK && (omode & O_NOFOLLOW) == 0){
+        cprintf("LINK\n");
         ilock(ip);
+        // FIXME
         if(getlink(ip, path) < 0)
             return -1;
         iunlock(ip);

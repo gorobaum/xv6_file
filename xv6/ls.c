@@ -28,7 +28,7 @@ ls(char *path)
 {
   char buf[512], *p;
   lname linkname;
-  int fd, dfd;
+  int fd, dfd, temp;
   struct dirent de;
   struct stat st;
   
@@ -80,16 +80,20 @@ ls(char *path)
       }
       printf(1, "%s %d %d %d", fmtname(buf), st.type, st.ino, st.size);
       if(st.type == T_SYMLINK){
-        if((dfd = open(buf, O_NOFOLLOW)) < 0)
+        if((dfd = open(buf, O_NOFOLLOW)) < 0) {
+          printf(1, "    fail open\n");
           return;
-        if(read(dfd, linkname, sizeof(linkname)) != sizeof(linkname)){
+        }
+        if((temp = read(dfd, linkname, sizeof(linkname))) != sizeof(linkname)){
           close(dfd);
+          printf(1, "    fail read %d/%d\n", temp, sizeof(linkname));
           return;
         }
         //if((getlink(st.ino, buf)) < 0)
         //  continue; 
         //
         printf(1,"  %s", linkname);
+        close(dfd);
       }
       printf(1,"\n");
     }

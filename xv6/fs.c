@@ -529,12 +529,12 @@ dirlookup(struct inode *dp, char *name, uint *poff)
 }
 
 int
-getlink(struct inode *ip, lname path){
+getlink(struct inode *ip, struct linkblock lb){
   //int size;
   //if(readi(ip, (char*)&size, 0, sizeof(int)) != sizeof(int))
   //  panic("getlink");
   //if(readi(ip, path, sizeof(int), size*sizeof(char)) != size*sizeof(char))
-  if(readi(ip, path, 0, sizeof(lname)) != sizeof(lname))
+  if(readi(ip, &lb, 0, sizeof(lb)) != sizeof(lb))
     panic("getlink");
   return 0;
 }
@@ -543,18 +543,18 @@ getlink(struct inode *ip, lname path){
 int
 makesoftlink(struct inode *dp, char *name, char *link)
 {
-  int size;
-  //lname buf;
+  struct linkblock lb;
   size = strlen(link);
-  if (size >= BSIZE) {
+  if (size >= LINKSIZE) {
     cprintf("Error, name too big for block! (max = %d bytes)\n", BSIZE);
     return -1;
   }
-  //safestrcpy(buf, link, size);
+  lb.size = size;
+  safestrcpy(lb.name, link, size+1);
   //if(writei(dp, (char*)&size, 0, sizeof(int)) != sizeof(int))
   //  panic("makesoft1");
   //if(writei(dp, buf, sizeof(int), size) != size)
-  if(writei(dp, link, 0, size+1) != size+1)
+  if(writei(dp, &lb, 0, sizeof(lb)) != sizeof(lb))
     panic("makesoft2");
 
   return 0;
