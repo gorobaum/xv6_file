@@ -529,29 +529,32 @@ dirlookup(struct inode *dp, char *name, uint *poff)
 }
 
 int
-getlink(struct inode *ip, char *path){
-  int size;
-  if(readi(ip, (char*)&size, 0, sizeof(int)) != sizeof(int))
-    panic("getlink");
-  if(readi(ip, path, sizeof(int), size*sizeof(char)) != size*sizeof(char))
+getlink(struct inode *ip, lname path){
+  //int size;
+  //if(readi(ip, (char*)&size, 0, sizeof(int)) != sizeof(int))
+  //  panic("getlink");
+  //if(readi(ip, path, sizeof(int), size*sizeof(char)) != size*sizeof(char))
+  if(readi(ip, path, 0, sizeof(lname)) != sizeof(lname))
     panic("getlink");
   return 0;
 }
   
-// Write a new directory entry (name, inum) into the directory dp.
+// Write a link entry on link file.
 int
 makesoftlink(struct inode *dp, char *name, char *link)
 {
   int size;
-  char *buf, *teste;
-  teste = kalloc();
-  buf = kalloc();
+  //lname buf;
   size = strlen(link);
-  strncpy(buf, link, size);
-  buf[size] = '\0';
-  if(writei(dp, (char*)&size, 0, sizeof(int)) != sizeof(int))
-    panic("makesoft1");
-  if(writei(dp, buf, sizeof(int), size) != size)
+  if (size >= BSIZE) {
+    cprintf("Error, name too big for block! (max = %d bytes)\n", BSIZE);
+    return -1;
+  }
+  //safestrcpy(buf, link, size);
+  //if(writei(dp, (char*)&size, 0, sizeof(int)) != sizeof(int))
+  //  panic("makesoft1");
+  //if(writei(dp, buf, sizeof(int), size) != size)
+  if(writei(dp, link, 0, size+1) != size+1)
     panic("makesoft2");
 
   return 0;

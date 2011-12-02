@@ -27,11 +27,12 @@ void
 ls(char *path)
 {
   char buf[512], *p;
-  int fd;
+  lname linkname;
+  int fd, dfd;
   struct dirent de;
   struct stat st;
   
-  if((fd = open(path, 0)) < 0){
+  if((fd = open(path, O_NOFOLLOW)) < 0){
     printf(2, "ls: cannot open %s\n", path);
     return;
   }
@@ -50,7 +51,7 @@ ls(char *path)
     printf(1, "%s %d %d %d\n", fmtname(path), st.type, st.ino, st.size);
     printf(1, "%s ->", fmtname(path));
     close(fd);
-    if((fd = open(path, O_FOLLOW)) < 0)
+    if((fd = open(path, 0)) < 0)
       return; 
     if(fstat(fd, &st) < 0){
       close(fd);
@@ -79,9 +80,16 @@ ls(char *path)
       }
       printf(1, "%s %d %d %d", fmtname(buf), st.type, st.ino, st.size);
       if(st.type == T_SYMLINK){
+        if((dfd = open(buf, O_NOFOLLOW)) < 0)
+          return;
+        if(read(dfd, linkname, sizeof(linkname)) != sizeof(linkname)){
+          close(dfd);
+          return;
+        }
         //if((getlink(st.ino, buf)) < 0)
         //  continue; 
-        printf(1,"  %s", buf);
+        //
+        printf(1,"  %s", linkname);
       }
       printf(1,"\n");
     }

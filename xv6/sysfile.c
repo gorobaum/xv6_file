@@ -173,14 +173,12 @@ sys_link(void)
       return -1;
     }
 
-    if(sizeof(*old) >= BSIZE){
-      cprintf("Error, name too big for block!\n");
+    // The create call returned ipn locked, so it is safe to do this.
+    if(makesoftlink(ipn, new, old) == -1){
       iunlockput(ipn);
       commit_trans();
       return -1;
     }
-    // The create call returned ipn locked, so it is safe to do this.
-    makesoftlink(ipn, new, old);
 
     iunlockput(ipn);
     commit_trans();
@@ -313,17 +311,7 @@ sys_open(void)
 
   if(argstr(0, &path) < 0 || argint(1, &omode) < 0)
     return -1;
-  if(omode & O_FOLLOW){
-    if((ip = namei(path)) == 0)
-      return -1;
-    ilock(ip);
-    if(getlink(ip, path) < 0)
-      return -1;
-    iunlock(ip);
-    if((ip = namei(path)) == 0)
-      return -1;
-    ilock(ip);
-  } else if(omode & O_CREATE){
+  if(omode & O_CREATE){
     begin_trans();
     ip = create(path, T_FILE, 0, 0);
     commit_trans();
@@ -332,8 +320,16 @@ sys_open(void)
   } else {
     if((ip = namei(path)) == 0)
       return -1;
+    if(ip->type == T_SYMLINK && !(omode & O_NOFOLLOW)){
+        ilock(ip);
+        if(getlink(ip, path) < 0)
+            return -1;
+        iunlock(ip);
+        if((ip = namei(path)) == 0)
+            return -1;
+    }
     ilock(ip);
-    if(ip->type == T_DIR && omode != O_RDONLY){
+    if(ip->type == T_DIR && (omode & (~O_NOFOLLOW)) != O_RDONLY){
       iunlockput(ip);
       return -1;
     }

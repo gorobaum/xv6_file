@@ -53,3 +53,8 @@ struct dirent {
   char name[DIRSIZ];
 };
 
+#define LINKSIZE BSIZE
+
+//
+typedef char lname[LINKSIZE];
+
