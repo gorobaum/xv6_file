@@ -37,6 +37,7 @@ int             filewrite(struct file*, char*, int n);
 void            readsb(int dev, struct superblock *sb);
 int             getlink(struct inode*, struct linkblock*);
 int             makesoftlink(struct inode*, char*, char*);
+struct inode*   resolvelink(struct inode*);
 int             dirlink(struct inode*, char*, uint);
 struct inode*   dirlookup(struct inode*, char*, uint*);
 struct inode*   ialloc(uint, short);

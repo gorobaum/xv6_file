@@ -305,11 +305,10 @@ create(char *path, short type, short major, short minor)
 int
 sys_open(void)
 {
-  int fd, omode, i;
+  int fd, omode;
   char *path;
   struct file *f;
-  struct inode *ip;
-  struct linkblock lb;
+  struct inode *ip, *link;
 
   if(argstr(0, &path) < 0 || argint(1, &omode) < 0)
     return -1;
@@ -323,22 +322,23 @@ sys_open(void)
     if((ip = namei(path)) == 0)
       return -1;
     ilock(ip);
+    if(ip->type == T_SYMLINK && (omode & O_NOFOLLOW) == 0){
+      if((link = resolvelink(ip)) == 0) {
+        iunlockput(ip);
+        return -1;
+      } else ip = link;
+    }
+    /*
     for(i = 0; i < MAXCHAIN && ip->type == T_SYMLINK && (omode & O_NOFOLLOW) == 0; i++){
       //cprintf("LINK\n");
       if(getlink(ip, &lb) < 0)
-          return -1;
+        return -1;
       iunlock(ip);
       if((ip = namei(lb.path)) == 0)
-          return -1;
+        return -1;
       ilock(ip);
     }
-    if (i >= MAXCHAIN) {
-      iunlockput(ip);
-      cprintf("The symbolic link chain is too deep. It may be cyclic.\n"
-              "It has more than %d depth levels.\n",
-              MAXCHAIN);
-      return -1;
-    }
+    */
     if(ip->type == T_DIR && (omode & (~O_NOFOLLOW)) != O_RDONLY){
       iunlockput(ip);
       return -1;

@@ -528,6 +528,7 @@ dirlookup(struct inode *dp, char *name, uint *poff)
   return 0;
 }
 
+// Retrive a link entry from a link file.
 int
 getlink(struct inode *ip, struct linkblock *lb){
   //int size;
@@ -539,7 +540,7 @@ getlink(struct inode *ip, struct linkblock *lb){
   return 0;
 }
   
-// Write a link entry on link file.
+// Write a link entry on a link file.
 int
 makesoftlink(struct inode *dp, char *name, char *link)
 {
@@ -559,6 +560,44 @@ makesoftlink(struct inode *dp, char *name, char *link)
     panic("makesoft2");
 
   return 0;
+}
+
+// Resolves a soft link, returning the true linked inode.
+// The given inode must be locked, and will be unlocked. 
+struct inode*
+resolvelink(struct inode *ip) {
+  int i;
+  struct inode *link, *next;
+  struct linkblock lb;
+
+  link = ip;
+
+  for (i = 0; i <= MAXCHAIN && link->type == T_SYMLINK; i++){
+    getlink(link, &lb);
+    if((next = namei(lb.path)) == 0){
+      if (link != ip) {
+        iunlock(link);
+        ilock(ip);
+      }
+      return 0;
+    }
+    iunlock(link);
+    link = next;
+    ilock(link);
+  }
+
+  if (i > MAXCHAIN){
+    cprintf("The symbolic link chain is too deep. It may be cyclic.\n"
+            "It has more than %d depth levels.\n",
+            MAXCHAIN);
+    if (link != ip) {
+      iunlock(link);
+      ilock(ip);
+    }  
+    return 0;
+  }
+
+  return link;
 }
 
 // Write a new directory entry (name, inum) into the directory dp.
