@@ -55,6 +55,10 @@ struct dirent {
 
 #define LINKSIZE (BSIZE-sizeof(ushort))
 
+#define LINKLENGTH(lb) (sizeof(ushort)+(lb).size+1)
+
+#define MAXCHAIN 10
+
 //
 struct linkblock {
   ushort size;

@@ -7,6 +7,7 @@ struct proc;
 struct spinlock;
 struct stat;
 struct superblock;
+struct linkblock;
 
 // bio.c
 void            binit(void);
@@ -34,9 +35,8 @@ int             filewrite(struct file*, char*, int n);
 
 // fs.c
 void            readsb(int dev, struct superblock *sb);
-int             getlink(struct inode*, char*);
+int             getlink(struct inode*, struct linkblock*);
 int             makesoftlink(struct inode*, char*, char*);
-int             getlink(struct inode*, char*);
 int             dirlink(struct inode*, char*, uint);
 struct inode*   dirlookup(struct inode*, char*, uint*);
 struct inode*   ialloc(uint, short);
