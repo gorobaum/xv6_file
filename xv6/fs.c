@@ -675,7 +675,7 @@ skipelem(char *path, char *name)
 static struct inode*
 namex(char *path, int nameiparent, char *name)
 {
-  struct inode *ip, *next;
+  struct inode *ip, *next, *link;
 
   if(*path == '/')
     ip = iget(ROOTDEV, ROOTINO);
@@ -684,6 +684,13 @@ namex(char *path, int nameiparent, char *name)
 
   while((path = skipelem(path, name)) != 0){
     ilock(ip);
+    if(ip->type == T_SYMLINK){
+      if((link = resolvelink(ip)) == 0){
+        iunlockput(ip);
+        return 0;
+      }
+      ip = link;
+    }
     if(ip->type != T_DIR){
       iunlockput(ip);
       return 0;

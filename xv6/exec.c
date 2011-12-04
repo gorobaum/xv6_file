@@ -4,8 +4,11 @@
 #include "mmu.h"
 #include "proc.h"
 #include "defs.h"
+#include "stat.h"
 #include "x86.h"
 #include "elf.h"
+#include "fs.h"
+#include "file.h"
 
 int
 exec(char *path, char **argv)
@@ -14,13 +17,20 @@ exec(char *path, char **argv)
   int i, off;
   uint argc, sz, sp, ustack[3+MAXARG+1];
   struct elfhdr elf;
-  struct inode *ip;
+  struct inode *ip, *link;
   struct proghdr ph;
   pde_t *pgdir, *oldpgdir;
 
   if((ip = namei(path)) == 0)
     return -1;
   ilock(ip);
+  if(ip->type == T_SYMLINK){
+    if((link = resolvelink(ip)) == 0){
+      iunlockput(ip);
+      return -1;
+    }
+    ip = link;
+  }
   pgdir = 0;
 
   // Check ELF header

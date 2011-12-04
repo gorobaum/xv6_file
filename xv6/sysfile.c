@@ -125,10 +125,10 @@ sys_link(void)
   
   if(argint(0, &op) < 0 || argstr(1, &old) < 0 || argstr(2, &new) < 0)
      return -1;
-  if((ipo = namei(old)) == 0)
-    return -1;
   
   if(!op){
+    if((ipo = namei(old)) == 0)
+      return -1;
     begin_trans();
 
     ilock(ipo);
@@ -328,17 +328,6 @@ sys_open(void)
         return -1;
       } else ip = link;
     }
-    /*
-    for(i = 0; i < MAXCHAIN && ip->type == T_SYMLINK && (omode & O_NOFOLLOW) == 0; i++){
-      //cprintf("LINK\n");
-      if(getlink(ip, &lb) < 0)
-        return -1;
-      iunlock(ip);
-      if((ip = namei(lb.path)) == 0)
-        return -1;
-      ilock(ip);
-    }
-    */
     if(ip->type == T_DIR && (omode & (~O_NOFOLLOW)) != O_RDONLY){
       iunlockput(ip);
       return -1;
@@ -402,11 +391,18 @@ int
 sys_chdir(void)
 {
   char *path;
-  struct inode *ip;
+  struct inode *ip, *link;
 
   if(argstr(0, &path) < 0 || (ip = namei(path)) == 0)
     return -1;
   ilock(ip);
+  if(ip->type == T_SYMLINK){
+    if((link = resolvelink(ip)) == 0){
+      iunlockput(ip);
+      return -1;
+    }
+    ip = link;
+  }
   if(ip->type != T_DIR){
     iunlockput(ip);
     return -1;

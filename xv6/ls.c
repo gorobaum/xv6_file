@@ -23,12 +23,29 @@ fmtname(char *path)
   return buf;
 }
 
+int getlink(char *path, struct linkblock *lb){
+  int fd;
+  if((fd = open(path, O_NOFOLLOW)) < 0) {
+    return -1;
+  }
+  if(read(fd, &(lb->size), sizeof(lb->size)) != sizeof(lb->size)){
+    close(fd);
+    return -1;
+  }
+  if(read(fd, lb->path, lb->size+1) != lb->size+1){
+    close(fd);
+    return -1;
+  }
+  close(fd);
+  return 0;
+}
+
 void
 ls(char *path)
 {
   char buf[512], *p;
   struct linkblock lb;
-  int fd, dfd;
+  int fd;
   struct dirent de;
   struct stat st;
   
@@ -48,17 +65,12 @@ ls(char *path)
     break;
 
   case T_SYMLINK:
-    printf(1, "%s %d %d %d\n", fmtname(path), st.type, st.ino, st.size);
-    printf(1, "%s ->", fmtname(path));
-    close(fd);
-    if((fd = open(path, 0)) < 0)
-      return; 
-    if(fstat(fd, &st) < 0){
-      close(fd);
-      return;
+    if(getlink(path, &lb) < 0) {
+      printf(1, "ls: cannot read link %s\n", path);
+      break;
     }
-    printf(1," %s\n", fmtname(path));
-    printf(1, "%s %d %d %d\n", fmtname(path), st.type, st.ino, st.size);
+    printf(1, "%s %d %d %d", fmtname(path), st.type, st.ino, st.size);
+    printf(1, " -> %s\n", lb.path);
     break;
 
   case T_DIR:
@@ -80,22 +92,10 @@ ls(char *path)
       }
       printf(1, "%s %d %d %d", fmtname(buf), st.type, st.ino, st.size);
       if(st.type == T_SYMLINK){
-        if((dfd = open(buf, O_NOFOLLOW)) < 0) {
-          printf(1, "ls: cannot open link %s\n", buf);
-          continue;
-        }
-        if(read(dfd, &(lb.size), sizeof(lb.size)) != sizeof(lb.size)){
-          close(dfd);
-          printf(1, "cannot read link size %s\n", buf);
-          continue;
-        }
-        if(read(dfd, &(lb.path), lb.size+1) != lb.size+1){
-          close(dfd);
-          printf(1, "cannot read link path %s\n", buf);
-          continue;
+        if(getlink(buf, &lb) < 0){
+          printf(1, "ls: cannot read link %s\n", path);
         }
         printf(1," -> %s", lb.path);
-        close(dfd);
       }
       printf(1,"\n");
     }
