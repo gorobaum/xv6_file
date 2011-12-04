@@ -531,16 +531,14 @@ dirlookup(struct inode *dp, char *name, uint *poff)
 // Retrive a link entry from a link file.
 int
 getlink(struct inode *ip, struct linkblock *lb){
-  //int size;
   if(readi(ip, (char*)lb, 0, sizeof(lb->size)) != sizeof(lb->size))
     panic("getlink");
-  //if(readi(ip, path, sizeof(int), size*sizeof(char)) != size*sizeof(char))
   if(readi(ip, (char*)lb, 0, LINKLENGTH(*lb)) != LINKLENGTH(*lb))
     panic("getlink");
   return 0;
 }
   
-// Write a link entry on a link file.
+// Write a link entry onto a link file.
 int
 makesoftlink(struct inode *dp, char *name, char *link)
 {
@@ -553,9 +551,6 @@ makesoftlink(struct inode *dp, char *name, char *link)
   }
   lb.size = size;
   safestrcpy(lb.path, link, size+1);
-  //if(writei(dp, (char*)&size, 0, sizeof(int)) != sizeof(int))
-  //  panic("makesoft1");
-  //if(writei(dp, buf, sizeof(int), size) != size)
   if(writei(dp, (char*)&lb, 0, LINKLENGTH(lb)) != LINKLENGTH(lb))
     panic("makesoft2");
 
@@ -563,7 +558,30 @@ makesoftlink(struct inode *dp, char *name, char *link)
 }
 
 // Resolves a soft link, returning the true linked inode.
-// The given inode must be locked, and will be unlocked. 
+// This function abeys the following contract:
+// - The given inode must be locked and it must be of type
+//   T_SYMLINK.
+// - Upon success, the returned node will be locked and the
+//   original one will be unlocked.
+// - Uponfailure, the returned node will be 0 and the
+//   original one will remain locked.
+// Thus, it usage should be like this:
+//
+//      struct inode *ip, *link;
+//      ...
+//      ip = namei(somepath); //or something analogous
+//      ilock(ip);
+//      if(ip->type == T_SYMLINK){
+//        if((link = resolvelink(ip)) == 0){
+//          iunlockput(ip);
+//          error; //could not resolve link
+//        }
+//        ip = link;
+//      }
+//      // ip will 'remain' locked if the code execution
+//      // gets here, but now it points to the correct
+//      // inode.
+//
 struct inode*
 resolvelink(struct inode *ip) {
   int i;

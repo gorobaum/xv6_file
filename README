@@ -1,0 +1,65 @@
+
+MAC0442 - Sistemas Operacionais
+Quarto Exercício-Programa: Links simbólicos.
+
+Alunos:                         NUSP:
+    Thiago de Gouveia Nunes         6797289
+    Wilson Kazuo Mizutani           9767230
+
+OBSERVAÇÕES:
+
+(I) Pastas e arquivos.
+
+  Nosso EP apenas contém uma pasta, 'xv6'. Nela está a nossa implementação do xv6 com a solução para
+o EP. Basta entrar nela e usar 'make qemu' normalmente.
+
+(II) Como usar.
+
+  Como especificado pelo enunciado, o uso dos link simbólicos funciona através do comando:
+
+    $ ln -s <old> <new>
+
+  E é possível identificar os links simbólicos presentes em um diretório com a ajuda do comando ls:
+
+    $ ls <dir>
+
+(III) Funcionalidades.
+
+  Nosso EP deve funcionar com link simbólicos para arquivos de qualquer tipo, incluindo diretórios e
+executáveis. Além disso, a resolução de caminhos (path resolution) também deve estar seguindo os
+links corretamente.
+
+(IV) Principais modificações feitas no xv6.
+
+  Os arquivos que modificamos com relação ao xv6 são:
+
+    defs.h
+    exec.c
+    fcntl.h
+    file.c
+    fs.c
+    fs.h
+    ln.c
+    ls.c
+    sysfile.c
+    user.h
+    usertests.c
+
+  Mas como o xv6 está atualmente sendo mantido por controle de versão (GIT), achamos melhor mandar
+todo o código do xv6 junto para garantir que nosso EP não seja corrigido com alguma versão diferente
+da qual nos baseamos, possivelmente gerando incompatibilidades.
+  Basicamente o que fizemos foi alterar a função sys_link para que ela recebesse um argumento a
+mais, uma flag indicando se o link deveria ser simbólico ou não. Criamos as definições necessárias
+(O_NOFOLLOW e T_SYMLINK) e implementamos um inode do tipo T_SYMLINK como sendo sempre um único bloco
+que segue a estrutura 'linkblock', definida em fs.h. Não conseguimos usar um bloco inteiro para o
+caminho a ser guardado no link, mas tampouco pudemos encontrar solução melhor.
+  Fora isso, acrescentamos umas funções novas em fs.c para manipulação de links simbólicos, e
+colocamos elas em uso onde era necessário (sysfile.c, ls.c, exec.c, etc). Inclusive alteramos a
+função 'namex' para que ela seguisse os links na hora de resolver um caminho. Para tanto, foi feita
+a função 'resolvelink' (em fs.c) que serve para seguir "recursivamente" os links simbólicos, até um
+limite de 10 nívies (esse valor pode serfacilmente alterado em fs.h). Ela tem um contrato meio
+peculiar quanto à trava do inode passado a ela. Tentamos deixar o mais claro possível isso na
+documentação dela. A função 'resolvelink' é usada em outros lugares também, como em 'open' e em
+'exec'.
+
+
